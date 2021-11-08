@@ -58,27 +58,6 @@ impl<T> Iterator for IntoIter<T> {
     }
 }
 
-// struct Iter<'a, T> {
-//     next: Option<&'a Box<Node<T>>>
-// }
-
-// impl<T> Iter<'_, T> {
-//     fn new(list: &List<T>) -> Iter<T> {
-//         Iter { next: list.head.as_ref() }
-//     }
-// }
-
-// impl<'a, T> Iterator for Iter<'a, T> {
-//     type Item = &'a T;
-
-//     fn next(&mut self) -> Option<Self::Item> {
-//         self.next.take().map(|node| {
-//             self.next = node.next.as_ref();
-//             &node.elem
-//         })
-//     }
-// }
-
 struct Iter<'a, T> {
     next: Option<&'a Node<T>>
 }
