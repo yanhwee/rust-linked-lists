@@ -37,6 +37,10 @@ impl<T> List<T> {
     fn iter(&self) -> Iter<T> {
         Iter::new(self)
     }
+
+    fn iter_mut(&mut self) -> IterMut<T> {
+        IterMut::new(self)
+    }
 }
 
 impl<T> Drop for List<T> {
@@ -79,10 +83,26 @@ impl<'a, T> Iterator for Iter<'a, T> {
     }
 }
 
+struct IterMut<'a, T> {
+    next: Option<&'a mut Node<T>>
+}
 
-// struct IterMut<T> {
-//     next: Option<&
-// }
+impl<T> IterMut<'_, T> {
+    fn new(list: &mut List<T>) -> IterMut<T> {
+        IterMut { next: list.head.as_deref_mut() }
+    }
+}
+
+impl<'a, T> Iterator for IterMut<'a, T> {
+    type Item = &'a mut T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next.take().map(|node| {
+            self.next = node.next.as_deref_mut();
+            &mut node.elem
+        })
+    }
+}
 
 
 #[cfg(test)]
@@ -154,6 +174,26 @@ mod test {
         assert_eq!(iter.next(), None);
     }
 
+    #[test]
+    fn list_iter_mut() {
+        let mut list = List::new();
+        for i in 0..10 {
+            list.push(i);
+        }
+
+        let mut iter = list.iter_mut();
+        for i in 10..20 {
+            iter.next().map(|x| *x = i );
+        }
+        assert_eq!(iter.next(), None);
+        
+        let mut iter = list.iter();
+        for i in 10..20 {
+            assert_eq!(iter.next(), Some(&i));
+        }
+        assert_eq!(iter.next(), None);
+    }
+
     // Benchmarks
     // #[test]
     fn list_drop_bench() {
@@ -164,7 +204,7 @@ mod test {
         }
     }
 
-    #[test]
+    // #[test]
     fn list_iter_bench() {
         let mut list = List::new();
         let n = 10_i32.pow(6); // 10 million
